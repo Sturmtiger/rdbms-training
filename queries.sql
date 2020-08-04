@@ -93,7 +93,7 @@ FROM (SELECT employee_id, COUNT(*) AS orders_amount FROM rented_movie_copy_statu
 
 
 
--- A fine for managers in the office who has unreturned movie copies from the last month.
+-- A fine for managers in the office who have unreturned movie copies from the last month.
 
 
 
