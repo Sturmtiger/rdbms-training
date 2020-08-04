@@ -59,15 +59,15 @@ WITH avg_movie_rating_in_office AS (SELECT office_id,
 SELECT office_and_movie_id.office_id,
        movie.name AS most_rated_movie_name
 FROM movie
-INNER JOIN (SELECT max_movie_rating_in_office.office_id,
-                   avg_movie_rating_in_office.movie_id
-            FROM (SELECT office_id,
-                         MAX(avg_movie_rating) AS max_movie_rating
-                  FROM avg_movie_rating_in_office
-                  GROUP BY office_id) AS max_movie_rating_in_office
-                  INNER JOIN avg_movie_rating_in_office
-                             ON max_movie_rating_in_office.office_id = avg_movie_rating_in_office.office_id
-                                AND max_movie_rating_in_office.max_movie_rating = avg_movie_rating_in_office.avg_movie_rating) AS office_and_movie_id
+  INNER JOIN (SELECT max_movie_rating_in_office.office_id,
+                     avg_movie_rating_in_office.movie_id
+              FROM (SELECT office_id,
+                           MAX(avg_movie_rating) AS max_movie_rating
+                    FROM avg_movie_rating_in_office
+                    GROUP BY office_id) AS max_movie_rating_in_office
+                      INNER JOIN avg_movie_rating_in_office
+                      ON max_movie_rating_in_office.office_id = avg_movie_rating_in_office.office_id
+                         AND max_movie_rating_in_office.max_movie_rating = avg_movie_rating_in_office.avg_movie_rating) AS office_and_movie_id
   ON office_and_movie_id.movie_id = movie.id;
 
 
@@ -88,12 +88,12 @@ FROM (SELECT employee_id, COUNT(*) AS orders_amount FROM rented_movie_copy_statu
       WHERE EXTRACT(YEAR FROM rented_at) = EXTRACT('YEAR' FROM NOW() - INTERVAL '1 month')
       AND EXTRACT(MONTH FROM rented_at) = EXTRACT('MONTH' FROM NOW() - INTERVAL '1 month')
       GROUP BY employee_id) AS employee_orders_amount
-INNER JOIN employee
-ON employee_orders_amount.employee_id = employee.id;
+  INNER JOIN employee
+  ON employee_orders_amount.employee_id = employee.id;
 
 
 
--- A fine for managers in the office who have unreturned movie copies from the last month.
+-- A fine for managers in the office who has unreturned movie copies from the last month.
 
 
 
@@ -106,14 +106,14 @@ SELECT name,
        not_returned_movies_of_office.not_returned_movies_amount * 5 AS fine,
        employee.salary - (not_returned_movies_of_office.not_returned_movies_amount * 5) AS difference
 FROM employee
-INNER JOIN (SELECT (SELECT office_id 
-                    FROM movie_copy_in_office 
-                    WHERE movie_copy_in_office.id = rented_movie_copy_status.id_movie_copy_in_office),
-                    COUNT(*) AS not_returned_movies_amount
-            FROM rented_movie_copy_status
-            WHERE EXTRACT(YEAR FROM rented_at) = EXTRACT('YEAR' FROM NOW() - INTERVAL '1 month')
-              AND EXTRACT(MONTH FROM rented_at) = EXTRACT('MONTH' FROM NOW() - INTERVAL '1 month')
-              AND returned_at IS NULL
-            GROUP BY office_id) AS not_returned_movies_of_office
-ON employee.office_id = not_returned_movies_of_office.office_id
-   AND employee.rank_id = (SELECT id FROM RANK WHERE name = 'manager');
+  INNER JOIN (SELECT (SELECT office_id 
+                      FROM movie_copy_in_office 
+                      WHERE movie_copy_in_office.id = rented_movie_copy_status.id_movie_copy_in_office),
+                      COUNT(*) AS not_returned_movies_amount
+              FROM rented_movie_copy_status
+              WHERE EXTRACT(YEAR FROM rented_at) = EXTRACT('YEAR' FROM NOW() - INTERVAL '1 month')
+                AND EXTRACT(MONTH FROM rented_at) = EXTRACT('MONTH' FROM NOW() - INTERVAL '1 month')
+                AND returned_at IS NULL
+              GROUP BY office_id) AS not_returned_movies_of_office
+    ON employee.office_id = not_returned_movies_of_office.office_id
+       AND employee.rank_id = (SELECT id FROM RANK WHERE name = 'manager');
