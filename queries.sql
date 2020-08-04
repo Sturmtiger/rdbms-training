@@ -33,7 +33,7 @@ GROUP BY oscar_movies_in_offices.office_id;
 
 
 
--- show movies that are in at least two(2) offices
+-- show movies that are in at least two offices.
 
 
 
@@ -47,7 +47,7 @@ HAVING COUNT(*) >= 2;
 
 
 
--- the most rated movie of each office
+-- the most rated movie of each office.
 
 
 
@@ -72,7 +72,7 @@ FROM movie
 
 
 
--- 10% salary bonus of the salary if a salesperson has made 5 orders from the last month
+-- 10% salary bonus of the salary if a salesperson has made 5 orders from the last month.
 
 
 
@@ -84,10 +84,12 @@ SELECT employee.name,
        employee.department_id,
        employee.salary,
        employee.salary * .1 AS salary_bonus
-FROM (SELECT employee_id, COUNT(*) AS orders_amount FROM rented_movie_copy_status
+FROM (SELECT employee_id 
+      FROM rented_movie_copy_status
       WHERE EXTRACT(YEAR FROM rented_at) = EXTRACT('YEAR' FROM NOW() - INTERVAL '1 month')
-      AND EXTRACT(MONTH FROM rented_at) = EXTRACT('MONTH' FROM NOW() - INTERVAL '1 month')
-      GROUP BY employee_id) AS employee_orders_amount
+        AND EXTRACT(MONTH FROM rented_at) = EXTRACT('MONTH' FROM NOW() - INTERVAL '1 month')
+      GROUP BY employee_id
+      HAVING COUNT(*) >= 5) AS employee_orders_amount
   INNER JOIN employee
   ON employee_orders_amount.employee_id = employee.id;
 
@@ -117,3 +119,13 @@ FROM employee
               GROUP BY office_id) AS not_returned_movies_of_office
     ON employee.office_id = not_returned_movies_of_office.office_id
        AND employee.rank_id = (SELECT id FROM RANK WHERE name = 'manager');
+
+
+
+-- Weekly pivot report on orders for each office (all days of the specific week will be determined by the passed date).
+
+
+
+SELECT * FROM get_week_report('29-07-2020');
+
+
